@@ -48,40 +48,19 @@
 
 <body class="bg-brand-light antialiased relative">
     <header class="fixed w-full top-0 z-50 nav-sticky transition-all duration-300">
-        <div class="max-w-6xl mx-auto px-8 md:px-12 h-24 flex items-center justify-between">
+        <div class="max-w-6xl mx-auto px-8 md:px-12 h-24 flex items-center justify-center">
+            
             <div class="flex items-center gap-4">
                 <a href="https://lindomarcosta.adv.br/index-en.html" class="cursor-pointer">
                     <img src="../img/logo-lindomar-costa.jpg" alt="Lindomar Costa Logo" class="h-14 md:h-16 w-auto object-contain py-2 cursor-pointer">
                 </a>
+                
                 <div class="flex flex-col">
                     <span class="font-display font-bold text-lg md:text-xl text-brand-dark tracking-wide uppercase leading-tight">Lindomar Costa</span>
                     <span class="text-[10px] md:text-xs text-brand-accent font-bold tracking-[0.2em] uppercase">Tech Law & Technology</span>
                 </div>
             </div>
             
-            <nav class="hidden md:flex gap-6 lg:gap-8 items-center">
-                <a href="https://lindomarcosta.adv.br/index-en.html" class="text-sm font-bold text-brand-dark hover:text-brand-accent transition uppercase cursor-pointer">Home</a>
-                <a href="https://lindomarcosta.adv.br/index-en.html#sobre" class="text-sm font-bold text-brand-dark hover:text-brand-accent transition uppercase cursor-pointer">About me</a>
-                <a href="https://lindomarcosta.adv.br/index-en.html#atuacao" class="text-sm font-bold text-brand-dark hover:text-brand-accent transition uppercase cursor-pointer">Core Expertise</a>
-                <a href="https://lindomarcosta.adv.br/index-en.html#diferencial" class="text-sm font-bold text-brand-dark hover:text-brand-accent transition uppercase cursor-pointer">Differentiator</a>
-                
-                <a href="mailto:lindomar@lindomarcosta.adv.br?subject=Legal%20Consultation%20Inquiry" class="bg-brand-accent hover:bg-brand-dark text-white text-sm font-bold py-3 px-6 rounded transition duration-300 uppercase shadow-md">
-                   Contact via Email
-                </a>
-            </nav>
-
-            <button id="mobile-menu-btn" class="md:hidden text-brand-dark text-2xl focus:outline-none">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
-        
-        <div id="mobile-menu" class="hidden md:hidden absolute top-24 left-0 w-full bg-white shadow-lg border-t border-gray-100 transition-all duration-300">
-            <nav class="flex flex-col py-4 px-8 space-y-4">
-                <a href="https://lindomarcosta.adv.br/index-en.html" class="mobile-link text-sm font-bold text-brand-dark hover:text-brand-accent uppercase cursor-pointer">Home</a>
-                <a href="mailto:lindomar@lindomarcosta.adv.br?subject=Legal%20Consultation%20Inquiry" class="bg-brand-accent text-white text-sm font-bold py-3 px-6 rounded text-center uppercase">
-                   Contact via Email
-                </a>
-            </nav>
         </div>
     </header>
 
@@ -190,10 +169,5 @@
         </div>
     </footer>
 
-    <script>
-        const btn = document.getElementById('mobile-menu-btn');
-        const menu = document.getElementById('mobile-menu');
-        btn.addEventListener('click', () => { menu.classList.toggle('hidden'); });
-    </script>
 </body>
 </html>
