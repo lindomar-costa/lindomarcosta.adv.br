@@ -91,18 +91,6 @@
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
-        .clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        .clamp-3 {
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
     </style>
 
     <script type="application/ld+json">
@@ -139,13 +127,13 @@
                 <a href="#atuacao" class="scroll-link text-sm font-bold text-brand-dark hover:text-brand-accent transition uppercase">Expertise</a>
                 <a href="#diferencial" class="scroll-link text-sm font-bold text-brand-dark hover:text-brand-accent transition uppercase">Diferencial</a>
                 <a href="#contato" class="scroll-link text-sm font-bold text-brand-dark hover:text-brand-accent transition uppercase">Contato</a>
-                <a href="index-en.html" onclick="sessionStorage.removeItem('lang_pref')" class="text-xs font-bold text-brand-gray hover:text-brand-accent transition uppercase tracking-widest flex items-center gap-2">
-                    <i class="fas fa-globe text-xs" aria-hidden="true"></i> EN
-                </a>
                 <a href="https://wa.me/5551998849390?text=Ol%C3%A1%2C%20Dr.%20Lindomar.%20Vi%20seu%20site%20e%20preciso%20de%20assessoria%20jur%C3%ADdica%20para%20meu%20neg%C3%B3cio%20digital." target="_blank" rel="noopener noreferrer" class="bg-brand-accent hover:bg-brand-dark text-white text-sm font-bold py-3 px-6 rounded transition duration-300 uppercase shadow-md">
                     Falar no WhatsApp
                 </a>
             </nav>
+            <a href="index-en.html" onclick="sessionStorage.removeItem('lang_pref')" class="hidden md:flex text-xs font-bold text-brand-gray hover:text-brand-accent transition uppercase tracking-widest items-center gap-1 ml-2">
+                <i class="fas fa-globe text-xs" aria-hidden="true"></i> EN
+            </a>
 
             <button id="mobile-menu-btn" type="button" class="md:hidden text-brand-dark text-2xl focus:outline-none" aria-label="Abrir menu" aria-expanded="false" aria-controls="mobile-menu">
                 <i class="fas fa-bars" aria-hidden="true"></i>
@@ -205,7 +193,7 @@
                     <div class="flex-1">
                         <h2 class="font-display font-bold text-4xl text-brand-dark mb-6">Arquitetura Jurídica para a <span class="text-brand-accent">Inovação</span></h2>
                         <p class="text-lg leading-relaxed mb-5 text-gray-600">Sou <strong>Lindomar Costa</strong>, advogado com atuação exclusiva em Direito Digital. Antes do Direito, construí base técnica sólida em tecnologia — com formação em desenvolvimento de jogos e certificação em IoT pela <strong>Samsung</strong>. Essa trajetória me coloca numa posição que poucos advogados ocupam: entendo a tecnologia por dentro.</p>
-                        <p class="text-lg leading-relaxed mb-8 text-gray-600">Entendo o que é um webhook, um data processor agreement e um sprint — e isso muda completamente a qualidade da assessoria que entrego. Para garantir o mais alto nível técnico-jurídico, mantenho formação contínua em governança da internet e resolução de disputas de domínios (UDRP) pela <strong>ICANN Learn</strong>.</p>
+                        <p class="text-lg leading-relaxed mb-8 text-gray-600">Para garantir o mais alto nível de entrega técnica, mantenho constante atualização internacional, possuindo capacitação em Governança da Internet, Privacidade de Dados e Resolução de Disputas de Domínios (UDRP) pela <strong>ICANN Learn</strong>.</p>
                         <a href="https://www.linkedin.com/in/lindomarcosta" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center bg-brand-accent hover:bg-brand-dark text-white font-display font-bold py-4 px-8 rounded shadow-lg transition-all duration-300 uppercase tracking-wide transform hover:-translate-y-1">
                             <i class="fab fa-linkedin-in text-xl mr-3" aria-hidden="true"></i>
                             Acompanhe no LinkedIn
@@ -239,32 +227,32 @@
                     <article class="bg-white p-8 shadow-sm border-t-4 border-transparent hover:border-brand-accent transition-all duration-300 card-hover rounded-sm text-left">
                         <div class="mb-6 text-brand-accent"><i class="fas fa-cloud text-4xl" aria-hidden="true"></i></div>
                         <h3 class="font-display font-bold text-xl mb-3 text-brand-dark uppercase">Regulação de SaaS</h3>
-                        <p class="text-gray-600 text-sm leading-relaxed clamp-2">Estruturação jurídica de plataformas SaaS, elaboração de EULA, políticas de assinatura e SLA.</p>
+                        <p class="text-gray-600 text-sm leading-relaxed">Estruturação de plataformas SaaS, elaboração de EULA, políticas de assinatura e SLA.</p>
                     </article>
                     <article class="bg-white p-8 shadow-sm border-t-4 border-transparent hover:border-brand-accent transition-all duration-300 card-hover rounded-sm text-left">
                         <div class="mb-6 text-brand-accent"><i class="fas fa-user-shield text-4xl" aria-hidden="true"></i></div>
                         <h3 class="font-display font-bold text-xl mb-3 text-brand-dark uppercase">LGPD & Governança</h3>
-                        <p class="text-gray-600 text-sm leading-relaxed clamp-2">Adequação à LGPD/GDPR, data mapping e frameworks de governança para operações digitais em escala.</p>
+                        <p class="text-gray-600 text-sm leading-relaxed">Adequação à LGPD/GDPR, data mapping e frameworks de governança para operações em escala.</p>
                     </article>
                     <article class="bg-white p-8 shadow-sm border-t-4 border-transparent hover:border-brand-accent transition-all duration-300 card-hover rounded-sm text-left">
                         <div class="mb-6 text-brand-accent"><i class="fas fa-globe text-4xl" aria-hidden="true"></i></div>
                         <h3 class="font-display font-bold text-xl mb-3 text-brand-dark uppercase">Ativos Digitais</h3>
-                        <p class="text-gray-600 text-sm leading-relaxed clamp-2">Proteção de domínios via UDRP, combate ao cybersquatting e defesa de marcas no ambiente online.</p>
+                        <p class="text-gray-600 text-sm leading-relaxed">Proteção de domínios via UDRP, combate ao cybersquatting e defesa de marcas no ambiente online.</p>
                     </article>
                     <article class="bg-white p-8 shadow-sm border-t-4 border-transparent hover:border-brand-accent transition-all duration-300 card-hover rounded-sm text-left">
                         <div class="mb-6 text-brand-accent"><i class="fas fa-file-signature text-4xl" aria-hidden="true"></i></div>
                         <h3 class="font-display font-bold text-xl mb-3 text-brand-dark uppercase">Contratos de TI</h3>
-                        <p class="text-gray-600 text-sm leading-relaxed clamp-2">Contratos para Software Houses, licenciamento de APIs, cessão de propriedade intelectual e white-label.</p>
+                        <p class="text-gray-600 text-sm leading-relaxed">Contratos para Software Houses, licenciamento de APIs, cessão de propriedade intelectual e white-label.</p>
                     </article>
                     <article class="bg-white p-8 shadow-sm border-t-4 border-transparent hover:border-brand-accent transition-all duration-300 card-hover rounded-sm text-left">
                         <div class="mb-6 text-brand-accent"><i class="fas fa-shopping-cart text-4xl" aria-hidden="true"></i></div>
                         <h3 class="font-display font-bold text-xl mb-3 text-brand-dark uppercase">Mercado Digital</h3>
-                        <p class="text-gray-600 text-sm leading-relaxed clamp-2">Estratégia jurídica para e-commerce, dropshipping, agências de marketing e plataformas de marketplace.</p>
+                        <p class="text-gray-600 text-sm leading-relaxed">Estratégia jurídica para e-commerce, dropshipping, agências de marketing e marketplaces.</p>
                     </article>
                     <article class="bg-white p-8 shadow-sm border-t-4 border-transparent hover:border-brand-accent transition-all duration-300 card-hover rounded-sm text-left">
                         <div class="mb-6 text-brand-accent"><i class="fas fa-lock text-4xl" aria-hidden="true"></i></div>
                         <h3 class="font-display font-bold text-xl mb-3 text-brand-dark uppercase">Compliance</h3>
-                        <p class="text-gray-600 text-sm leading-relaxed clamp-2">Conformidade digital para mitigação de riscos legais e assessoria em incidentes de segurança cibernética.</p>
+                        <p class="text-gray-600 text-sm leading-relaxed">Conformidade digital para mitigação de riscos legais e resposta a incidentes de segurança.</p>
                     </article>
                 </div>
             </div>
@@ -277,17 +265,17 @@
                     <div class="px-4 py-4">
                         <i class="fas fa-code text-4xl text-blue-300 mb-4" aria-hidden="true"></i>
                         <h3 class="font-display font-bold text-xl mb-2">Compreensão Técnica</h3>
-                        <p class="text-gray-300 text-sm clamp-3">Background em TI antes do Direito, de IoT a desenvolvimento de software. Entendo webhooks, sprints e data processor agreements — e isso muda a assessoria que entrego.</p>
+                        <p class="text-gray-300 text-sm">Background em TI antes do Direito — de IoT a desenvolvimento de software. Entendo a tecnologia por dentro, e isso muda completamente a assessoria que entrego.</p>
                     </div>
                     <div class="px-4 py-4">
                         <i class="fas fa-shield-alt text-4xl text-blue-300 mb-4" aria-hidden="true"></i>
                         <h3 class="font-display font-bold text-xl mb-2">Prevenção Ativa</h3>
-                        <p class="text-gray-300 text-sm clamp-3">Contratos e adequações regulatórias estruturados para proteger operações digitais contra litígios futuros e autuações da ANPD.</p>
+                        <p class="text-gray-300 text-sm">Contratos e frameworks regulatórios pensados para proteger operações digitais contra litígios futuros e notificações da ANPD.</p>
                     </div>
                     <div class="px-4 py-4">
                         <i class="fas fa-rocket text-4xl text-blue-300 mb-4" aria-hidden="true"></i>
                         <h3 class="font-display font-bold text-xl mb-2">Foco em Escala</h3>
-                        <p class="text-gray-300 text-sm clamp-3">Compliance jurídico como motor de crescimento: a documentação certa abre portas com investidores e parceiros internacionais.</p>
+                        <p class="text-gray-300 text-sm">A documentação jurídica certa abre portas com investidores e parceiros internacionais. Compliance como motor de crescimento.</p>
                     </div>
                 </div>
             </div>
