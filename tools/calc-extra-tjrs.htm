@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora Extrajudicial RS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+    .hide-arrows::-webkit-outer-spin-button, .hide-arrows::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .hide-arrows { -moz-appearance: textfield; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+    
+    @media print {
+      body { background-color: white !important; padding: 0 !important; margin: 0 !important; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      @page { margin: 15mm; }
+    }
+  </style>
+</head>
+<body class="text-slate-800 p-4 md:p-8 max-w-6xl mx-auto print:max-w-none print:w-full print:p-0">
+
+  <!-- Painel Superior (Oculto na Impressão) -->
+  <div class="bg-white border border-slate-200 shadow-sm rounded-xl mb-6 p-5 md:p-6 print:hidden">
+    <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-lg font-semibold text-slate-900 tracking-tight">Cálculo Extrajudicial (TJRS + Tributos)</h1>
+        <p class="text-xs text-slate-500 mt-1">Impostos, Notas, Imóveis, RTDPJ, Protestos e Registo Civil (Base 2026)</p>
+      </div>
+      <button id="btn-clear" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-md transition-colors">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        Limpar Tudo
+      </button>
+    </div>
+
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-wrap gap-4 items-end">
+        <div id="container-upf" class="w-full sm:w-auto min-w-[140px] hidden">
+          <div class="flex justify-between items-center mb-1.5 ml-1">
+            <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider">UPF-RS do Ano (R$)</label>
+            <a id="link-upf" href="https://atendimento.receita.rs.gov.br/upf-rs" target="_blank" class="text-[10px] font-medium text-blue-500 hover:text-blue-700 hover:underline">Consultar UPF</a>
+          </div>
+          <input type="text" id="upf" value="28,3264" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+        </div>
+        
+        <div id="container-valor" class="w-full sm:w-auto min-w-[200px] flex-1 sm:flex-none hidden">
+          <div class="flex justify-between items-center mb-1.5 ml-1">
+            <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Base de Cálculo / Avaliação (R$)</label>
+          </div>
+          <input type="text" id="valor_base" placeholder="Ex: 500.000,00" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+        </div>
+        
+        <div id="container-tipo" class="w-full sm:w-auto min-w-[200px] flex-1 sm:flex-none hidden">
+          <div class="flex justify-between items-center mb-1.5 ml-1">
+            <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Natureza da Transmissão (ITCMD)</label>
+          </div>
+          <select id="tipo_transmissao" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+            <option value="causa_mortis">Causa Mortis (Inventário/Herança)</option>
+            <option value="doacao">Doação (Inter Vivos)</option>
+          </select>
+        </div>
+      </div>
+      
+      <div id="valor-upf-display" class="text-xs text-slate-400 font-mono -mt-2 ml-1 h-4 hidden items-center"></div>
+      
+      <div class="flex flex-wrap gap-4 items-end pt-2 border-t border-slate-100">
+        <div class="w-full sm:w-auto min-w-[200px] flex-1">
+          <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Nome do Cliente / Requerente</label>
+          <input type="text" id="client-name" placeholder="Ex: João da Silva" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+        </div>
+        <div class="w-full sm:w-auto min-w-[200px] flex-1">
+          <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Descrição do Ato / Bem</label>
+          <input type="text" id="case-name" placeholder="Ex: Matrícula 12.345 - Apto Centro" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+        </div>
+        <button id="btn-clear-mobile" class="md:hidden w-full mt-2 flex justify-center items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-lg transition-colors">
+          Limpar Seleção
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start print:block print:w-full">
+    
+    <!-- Catálogo (Oculto na Impressão) -->
+    <div class="lg:col-span-7 space-y-3 print:hidden">
+      <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider ml-1 mb-1">Selecione os atos exigidos</div>
+      <div id="catalog" class="space-y-3"></div>
+    </div>
+
+    <!-- Resumo (Expande na Impressão) -->
+    <div class="lg:col-span-5 lg:sticky lg:top-8 print:w-full print:static">
+      <div class="flex items-center justify-between mb-1 print:hidden">
+        <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider ml-1">Resumo Financeiro</div>
+        <button id="btn-export-pdf" class="hidden items-center gap-1.5 text-[11px] font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors px-3 py-1.5 rounded-md shadow-sm">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+          Exportar PDF
+        </button>
+      </div>
+      
+      <div id="summary" class="bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden flex flex-col min-h-[200px] print:shadow-none print:border-none print:block"></div>
+      
+      <div class="text-[11px] text-slate-500 mt-4 leading-relaxed px-1 print:mt-6 print:text-slate-400 print:text-[9px]">
+        * Os valores baseiam-se na Tabela Oficial da Corregedoria. Tributos (ITCMD/ITBI/ISSQN) são regidos pela legislação fazendária e dependem da avaliação fiscal, não havendo vinculação absoluta com o valor declarado pelas partes.
+      </div>
+    </div>
+  </div>
+
+<script>
+// MATRIZES DE CUSTOS TJRS 2026 [Limite da Faixa, Valor em R$]
+const TABELA_NOTAS = [
+  [2481.80, 222.80], [7445.20, 252.50], [12408.70, 292.40], [18612.90, 346.10], [24816.80, 395.60],
+  [37225.20, 468.10], [49633.80, 552.70], [74451.00, 628.70], [99267.80, 728.60], [124085.00, 828.50],
+  [148901.60, 928.10], [198535.70, 1076.70], [248169.50, 1277.10], [297803.60, 1475.80],
+  [347437.30, 1675.30], [397071.00, 1889.80], [446705.00, 2075.00], [496338.90, 2274.40],
+  [545972.80, 2473.70], [595606.80, 2673.20], [645240.70, 2871.60], [694874.60, 3072.30],
+  [744508.50, 3271.90], [992677.90, 3870.10], [1240847.60, 4867.50], [Infinity, 5482.90]
+];
+
+const TABELA_RI = [
+  [2481.80, 226.10], [4963.40, 230.80], [7445.20, 241.00], [9927.00, 251.10], [12408.70, 260.90],
+  [14890.10, 271.00], [17371.50, 281.30], [19853.70, 291.30], [22335.10, 300.70], [24816.80, 310.40],
+  [37225.20, 340.90], [49633.80, 390.80], [74451.00, 465.90], [99267.80, 565.50], [124085.00, 664.90],
+  [148901.60, 764.70], [173718.60, 864.60], [198535.70, 964.20], [223352.70, 1064.20],
+  [248169.50, 1163.90], [297803.60, 1313.30], [347437.30, 1512.30], [397071.00, 1712.00],
+  [446705.00, 1911.30], [496338.90, 2111.70], [620424.00, 2460.80], [744508.50, 2958.90],
+  [868593.30, 3458.00], [992677.90, 3956.20], [1116762.80, 4454.90], [1240847.60, 4953.60],
+  [Infinity, 5482.90]
+];
+
+const TABELA_PROTESTO = [
+  [248.10, 7.90], [496.70, 13.20], [744.50, 20.40], [1240.90, 26.70], [2481.80, 33.20],
+  [12408.70, 44.90], [49633.80, 123.00], [124085.00, 315.80], [248169.50, 648.30],
+  [744508.50, 1270.40], [992677.90, 2932.40], [1240847.60, 3763.60], [1489017.10, 4595.20],
+  [Infinity, 5482.90]
+];
+
+const TABELA_RTDPJ = [
+  [2481.80, 58.00], [7445.20, 68.40], [12408.70, 81.10], [24816.80, 105.00], [74451.00, 188.50],
+  [148901.60, 354.40], [248169.50, 586.90], [372254.30, 886.00], [496338.90, 1218.80],
+  [620424.00, 1550.80], [744508.50, 1883.80], [868593.30, 2216.20], [992677.90, 2548.30],
+  [1116762.80, 2881.20], [1240847.60, 3213.30], [1364932.40, 3546.80], [1489017.10, 3878.80],
+  [1613101.90, 4210.70], [1737186.70, 4543.30], [1861271.50, 4875.80], [1985356.20, 5208.10],
+  [Infinity, 5482.90]
+];
+
+// ESTRUTURA DO CATÁLOGO POR SERVENTIA
+const CATS = [
+  {id:"imp", label:"Impostos (Estaduais e Municipais)", bg:"bg-blue-50", border:"border-blue-100", hdr:"bg-blue-600", text:"text-blue-600"},
+  {id:"not", label:"Tabelionato de Notas", bg:"bg-emerald-50", border:"border-emerald-100", hdr:"bg-emerald-600", text:"text-emerald-600"},
+  {id:"ri", label:"Registo de Imóveis", bg:"bg-violet-50", border:"border-violet-100", hdr:"bg-violet-600", text:"text-violet-600"},
+  {id:"rtdpj", label:"Registo Títulos e Documentos (RTDPJ)", bg:"bg-indigo-50", border:"border-indigo-100", hdr:"bg-indigo-600", text:"text-indigo-600"},
+  {id:"pro", label:"Tabelionato de Protestos", bg:"bg-orange-50", border:"border-orange-100", hdr:"bg-orange-600", text:"text-orange-600"},
+  {id:"rc", label:"Registo Civil das Pessoas Naturais", bg:"bg-amber-50", border:"border-amber-100", hdr:"bg-amber-600", text:"text-amber-600"},
+  {id:"ext", label:"Taxas Acessórias (Comuns a todos)", bg:"bg-slate-50", border:"border-slate-200", hdr:"bg-slate-700", text:"text-slate-700"}
+];
+
+const ACTS = [
+  // Impostos
+  {id:"i1", cat:"imp", label:"ITCMD (Transmissão Causa Mortis / Doação)", law:"Lei Est. 8.821/89", type:"itcmd", needsVal:true},
+  {id:"i2", cat:"imp", label:"ITBI Municipal (Informar valor cobrado/estimado)", law:"Competência Municipal", type:"brl_manual"},
+  
+  // Tabelionato de Notas
+  {id:"n1", cat:"not", label:"Escritura de Compra e Venda (Imóvel)", law:"Tabela de Notas, 1, 'i'", type:"notas_val", needsVal:true, deps:['e1', 'e2', 'i2'], alert:"A Compra e Venda de imóveis exige ITBI Municipal prévio. O sistema ativou o campo; insira o valor apurado pela Prefeitura na secção 'Impostos'."},
+  {id:"n1_moveis", cat:"not", label:"Escritura de Compra e Venda (Bens Móveis ou Quotas)", law:"Tabela de Notas, 1, 'i'", type:"notas_val", needsVal:true, deps:['e1', 'e2'], alert:"A Compra e Venda de bens móveis (veículos, quotas sociais) não sofre incidência de ITBI, apenas os emolumentos sobre o valor financeiro do negócio."},
+  {id:"n1_doacao", cat:"not", label:"Escritura de Doação (Imóveis, Móveis, Quotas ou Valores)", law:"Tabela de Notas, 1, 'i'", type:"notas_val", needsVal:true, deps:['e1', 'e2', 'i1'], alert:"A Doação (seja de imóveis, veículos, dinheiro ou quotas) exige ITCMD Estadual. A calculadora ativou o imposto, configurou a natureza da transmissão para 'Doação' e indexou as alíquotas automáticas."},
+  {id:"n1_inv", cat:"not", label:"Escritura de Inventário e Partilha", law:"Tabela de Notas, 1, 'i'", type:"notas_val", needsVal:true, deps:['e1', 'e2', 'i1', 'i2'], alert:"O Inventário exige ITCMD. ATENÇÃO: Se houver partilha desproporcional (excesso de meação/quinhão) com compensação financeira, incidirá também ITBI. Ambos os impostos foram ativados; deixe o ITBI a zero se a partilha for estritamente simétrica."},
+  {id:"n2", cat:"not", label:"Escritura de Extinção de Condomínio / Divisão", law:"Tabela de Notas, 1, 'b'", type:"fixq", val:110.10, deps:['e1', 'e2', 'i2'], alert:"A Extinção de Condomínio é um ato sem valor declarado, MAS se houver divisão desproporcional com torna (compensação financeira), haverá incidência de ITBI. O campo foi ativado por precaução."},
+  {id:"n_div_sem", cat:"not", label:"Escritura de Divórcio / Separação (Sem partilha)", law:"Tabela de Notas, 1, 'd'", type:"fixq", val:110.10, deps:['e1', 'e2']},
+  {id:"n_renuncia", cat:"not", label:"Renúncia de Herança / Cessão Gratuita", law:"Tabela de Notas, 1, 'f'", type:"fixq", val:110.10, deps:['e1', 'e2', 'i1'], alert:"A Renúncia Translativa (em favor de indivíduo específico) configura doação, incidindo ITCMD. Apenas a renúncia abdicativa pura é isenta. Imposto ativado preventivamente."},
+  {id:"n3", cat:"not", label:"Testamento Público (Ato base)", law:"Tabela de Notas, 1, 'g'", type:"fix", val:430.20, deps:['e1', 'e2']},
+  {id:"n_test_cerr", cat:"not", label:"Aprovação de Testamento Cerrado", law:"Tabela de Notas, 2", type:"fix", val:216.30, deps:['e1']},
+  {id:"n4", cat:"not", label:"Ata Notarial Padrão", law:"Tabela de Notas, 3, 'b'", type:"fix", val:274.40, deps:['e1', 'e2']},
+  {id:"n5", cat:"not", label:"Procuração (Plenos poderes / Venda de imóveis)", law:"Tabela de Notas, 1, 'c'", type:"fixq", val:68.60, deps:['e1']},
+  {id:"n6", cat:"not", label:"Reconhecimento de Firma (Por assinatura simples)", law:"Tabela Notas, 6", type:"fixq", val:7.30},
+  {id:"n7", cat:"not", label:"Reconhecimento de Firma (Doc. c/ conteúdo financeiro)", law:"Tabela Notas, 6", type:"fixq", val:10.90},
+  {id:"n8", cat:"not", label:"Autenticação de Cópia (Por face)", law:"Tabela Notas, 4, 'a'", type:"fixq", val:7.30},
+  {id:"n_pub", cat:"not", label:"Pública-forma (Por página)", law:"Tabela Notas, 5, 'b'", type:"fixq", val:61.70, deps:['e1', 'e2']},
+  
+  // Registo de Imóveis
+  {id:"r1", cat:"ri", label:"Registo de Imóvel com Conteúdo Financeiro", law:"Tabela RI, 1", type:"ri_val", needsVal:true, deps:['e1', 'e2', 'i2'], alert:"O Registo Imobiliário exige Processamento e Digitalização. O ITBI Municipal foi ativado preventivamente caso o título seja um instrumento particular com força de escritura (ex: alienação fiduciária bancária)."},
+  {id:"r2", cat:"ri", label:"Averbação de Imóvel (50% do Registo base)", law:"Tabela RI, Item 2", type:"ri_av", needsVal:true, deps:['e1', 'e2']},
+  {id:"ri_cond", cat:"ri", label:"Registo de Convenção de Condomínio (até 20 unid.)", law:"Tabela RI, 5", type:"fixq", val:316.60, deps:['e1', 'e2']},
+  {id:"r3", cat:"ri", label:"Abertura de Ficha de Matrícula (Novas)", law:"Tabela RI, Item 3", type:"fixq", val:30.60},
+  {id:"r4", cat:"ri", label:"Processamento de Retificação Complexa", law:"Tabela RI, 12, 'a.1'", type:"fix", val:180.60, deps:['e1', 'e2']},
+  {id:"r5", cat:"ri", label:"Certidão de Inteiro Teor do Imóvel (1ª Página)", law:"Tabela RI, 15", type:"fixq", val:13.60},
+
+  // RTDPJ
+  {id:"rt1", cat:"rtdpj", label:"Registo de Título/Contrato (Com valor declarado)", law:"Tabela RTDPJ, 7, 'b'", type:"rtdpj_val", needsVal:true, deps:['e1', 'e2'], alert:"RTDPJ: Não esqueça de lançar a quantidade de páginas para Digitalização. Atos de RTDPJ costumam sofrer incidência de ISSQN municipal (informe no campo manual)."},
+  {id:"rt2", cat:"rtdpj", label:"Registo de Documento sem valor expresso", law:"Tabela RTDPJ, 7, 'b'", type:"fixq", val:54.70, deps:['e1', 'e2']},
+  {id:"rt3", cat:"rtdpj", label:"Intimação e Notificação Extrajudicial", law:"Tabela RTDPJ, 9", type:"fixq", val:54.70, deps:['e1', 'e2', 'e4'], alert:"A Notificação Extrajudicial via RTDPJ exige a cobrança da Diligência Externa (já ativada). Ajuste a Qtd. de Diligências se houver mais de um destinatário ou endereços distintos."},
+  {id:"rt4", cat:"rtdpj", label:"Registo de Pessoas Jurídicas (Sociedades simples, etc)", law:"Tabela PJ, 3", type:"fix", val:125.00, deps:['e1', 'e2']},
+
+  // Protestos
+  {id:"p1", cat:"pro", label:"Apontamento de Título de Dívida", law:"Tabela Protestos, 1", type:"pro_val", needsVal:true, deps:['e1'], alert:"Protesto: Em comarcas com mais de um tabelionato (ex: Porto Alegre, Caxias), há também a taxa do Distribuidor prévia ao apontamento. Considere adicionar esse custo na rubrica manual."},
+  {id:"p2", cat:"pro", label:"Cancelamento do Protesto", law:"Tabela Protestos, 5", type:"fixq", val:12.90, deps:['e1']},
+  {id:"p3", cat:"pro", label:"Intimação de Protesto", law:"Tabela Protestos, 2", type:"fixq", val:12.90, deps:['e1'], alert:"O Tabelionato de Protestos cobra o custo de envio dos Correios com AR, além desta taxa básica. Lance este montante em 'ISSQN / Selos / Correios'."},
+  
+  // Registo Civil
+  {id:"c1", cat:"rc", label:"Assento de Casamento (Realizado no Cartório)", law:"Tabela Registo Civil, 2, 'a'", type:"fix", val:66.00, deps:['e1']},
+  {id:"c2", cat:"rc", label:"Assento de Casamento (Realizado no Domicílio)", law:"Tabela Registo Civil, 2, 'b'", type:"fix", val:132.50, deps:['e1']},
+  {id:"c3", cat:"rc", label:"Anotação ou Averbação à margem do assento", law:"Tabela Registo Civil, 3", type:"fixq", val:52.30, deps:['e1']},
+  {id:"c4", cat:"rc", label:"Certidões Expedidas (Por página)", law:"Tabela Registo Civil, 4", type:"fixq", val:42.20},
+  {id:"c5", cat:"rc", label:"Habilitação de Casamento (Ato prévio)", law:"Tabela Registo Civil, 8", type:"fixq", val:97.80, deps:['e1'], alert:"O processamento do casamento civil exige, na base, a Habilitação e o Assento propriamente dito. Confirme se cobrou ambos. Adicione também as custas do Juiz de Paz, se aplicável."},
+  {id:"rc_div", cat:"rc", label:"Registo de Sentença de Divórcio / Separação", law:"Tabela Registo Civil, 11", type:"fixq", val:66.00, deps:['e1']},
+  
+  // Taxas Acessórias e Ajustes Manuais
+  {id:"e1", cat:"ext", label:"Processamento Eletrónico de Dados", law:"Disposição Geral", type:"fixq", val:7.30},
+  {id:"e2", cat:"ext", label:"Digitalização de Documentos (Páginas)", law:"Disposição Geral", type:"fixq", val:2.30},
+  {id:"e3", cat:"ext", label:"Conferência de documentos via Internet", law:"Disposição Geral", type:"fixq", val:7.30},
+  {id:"e4", cat:"ext", label:"Diligência Externa / Expedição (Base)", law:"Disposição Geral", type:"fixq", val:55.40},
+  {id:"e5", cat:"ext", label:"Selos Digitais / ISSQN / Correios (Valor manual)", law:"Taxas Municipais/Adicionais", type:"brl_manual"}
+];
+
+// LÓGICA DE CÁLCULO
+function getTabelaValor(tabela, valor) {
+  for (let i = 0; i < tabela.length; i++) {
+    if (valor <= tabela[i][0]) return tabela[i][1];
+  }
+  return tabela[tabela.length - 1][1];
+}
+
+function parseNum(s){ 
+  return parseFloat(String(s||0).replace(/\./g,'').replace(',','.')) || 0; 
+}
+function fmtBRL(v){ 
+  return v.toLocaleString('pt-PT',{style:'currency',currency:'BRL'}); 
+}
+
+function calcCustas(act, valBRL, upfBRL, tipoTransmissao, qty, manualVal) {
+  const q = Math.max(1, qty || 1);
+  
+  if (act.type === 'fix') return { ok: true, brl: act.val, meta: '' };
+  if (act.type === 'fixq') return { ok: true, brl: act.val * q, meta: '' };
+  
+  if (act.type === 'brl_manual') {
+    return { ok: true, brl: manualVal || 0, meta: 'Valor informado manualmente' };
+  }
+  
+  if (!valBRL) return { ok: false, msg: 'Requer valor base' };
+
+  if (act.type === 'notas_val') {
+    const custo = getTabelaValor(TABELA_NOTAS, valBRL);
+    return { ok: true, brl: custo * q, meta: 'Conforme tabela progressiva' };
+  }
+  
+  if (act.type === 'ri_val') {
+    const custo = getTabelaValor(TABELA_RI, valBRL);
+    return { ok: true, brl: custo * q, meta: 'Conforme tabela progressiva' };
+  }
+
+  if (act.type === 'ri_av') {
+    const custo = getTabelaValor(TABELA_RI, valBRL) * 0.5;
+    return { ok: true, brl: custo * q, meta: '50% do valor de registo' };
+  }
+  
+  if (act.type === 'rtdpj_val') {
+    const custo = getTabelaValor(TABELA_RTDPJ, valBRL);
+    return { ok: true, brl: custo * q, meta: 'Tabela RTDPJ progressiva' };
+  }
+  
+  if (act.type === 'pro_val') {
+    const custo = getTabelaValor(TABELA_PROTESTO, valBRL);
+    return { ok: true, brl: custo * q, meta: 'Tabela Protestos progressiva' };
+  }
+
+  if (act.type === 'itcmd') {
+    if (!upfBRL) return { ok: false, msg: 'Requer valor UPF' };
+    const qtdeUpfs = valBRL / upfBRL;
+    let aliquota = 0;
+
+    if (tipoTransmissao === 'causa_mortis') {
+      if (qtdeUpfs <= 2000) aliquota = 0;
+      else if (qtdeUpfs <= 10000) aliquota = 0.03;
+      else if (qtdeUpfs <= 30000) aliquota = 0.04;
+      else if (qtdeUpfs <= 50000) aliquota = 0.05;
+      else aliquota = 0.06;
+    } else { // doacao
+      if (qtdeUpfs <= 10000) aliquota = 0.03;
+      else aliquota = 0.04;
+    }
+
+    const imposto = valBRL * aliquota;
+    const isento = aliquota === 0;
+    
+    return { 
+      ok: true, 
+      brl: imposto, 
+      meta: isento ? 'ISENTO (Abaixo do limite)' : `${(aliquota*100).toFixed(0)}% sobre o valor avaliado`
+    };
+  }
+
+  return { ok: false, msg: '?' };
+}
+
+let sel = {}, qty = {}, manualVals = {}, openCats = {imp: true, not: true, ri: true, rtdpj: false, pro: false, rc: false, ext: true};
+
+function getInputs(){
+  return {
+    upf: parseNum(document.getElementById('upf').value),
+    val: parseNum(document.getElementById('valor_base').value),
+    tipo: document.getElementById('tipo_transmissao').value,
+    client: document.getElementById('client-name').value.trim(),
+    caseName: document.getElementById('case-name').value.trim()
+  };
+}
+
+function renderCatalog(){
+  const catContainer = document.getElementById('catalog');
+  catContainer.innerHTML = '';
+
+  CATS.forEach(c => {
+    const acts = ACTS.filter(a => a.cat === c.id);
+    if(acts.length === 0) return;
+    
+    const count = acts.filter(a => sel[a.id]).length;
+    const isOpen = !!openCats[c.id];
+
+    const wrap = document.createElement('div');
+    wrap.className = `border rounded-xl overflow-hidden transition-all duration-200 ${c.border}`;
+    
+    const hdr = document.createElement('button');
+    hdr.className = `w-full flex items-center justify-between px-4 py-3 cursor-pointer text-left transition-colors ${c.hdr} text-white`;
+    hdr.innerHTML = `
+      <span class="text-xs font-medium tracking-wide">${c.label}</span>
+      <div class="flex items-center gap-2">
+        ${count > 0 ? `<span class="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full">${count}</span>` : ''}
+        <svg class="w-4 h-4 transform transition-transform ${isOpen ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+      </div>
+    `;
+    hdr.onclick = () => { openCats[c.id] = !openCats[c.id]; renderAll(); };
+    wrap.appendChild(hdr);
+
+    if(isOpen){
+      const body = document.createElement('div');
+      body.className = `${c.bg} divide-y divide-black/5`;
+      
+      acts.forEach(act => {
+        const checked = !!sel[act.id];
+        const needsQ = act.type === 'fixq' || act.type === 'notas_val' || act.type === 'ri_val' || act.type === 'ri_av' || act.type === 'rtdpj_val' || act.type === 'pro_val';
+        const isManualBrl = act.type === 'brl_manual';
+        
+        const row = document.createElement('div');
+        row.className = `flex items-start gap-3 p-3 transition-colors ${checked ? 'bg-black/5' : 'hover:bg-black/[0.02]'}`;
+        
+        const cbWrap = document.createElement('div');
+        cbWrap.className = "flex-shrink-0 pt-0.5";
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = checked;
+        cb.className = "w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer transition-all";
+        cb.onchange = () => {
+          const isChecked = cb.checked;
+          sel[act.id] = isChecked;
+          
+          if(isChecked) {
+            if (needsQ && !qty[act.id]) qty[act.id] = 1;
+            if (isManualBrl && !manualVals[act.id]) manualVals[act.id] = 0;
+            
+            // Regras Específicas de Auto-Configuração da Transmissão
+            if (act.id === 'n1_doacao') {
+              document.getElementById('tipo_transmissao').value = 'doacao';
+            } else if (act.id === 'n1_inv') {
+              document.getElementById('tipo_transmissao').value = 'causa_mortis';
+            }
+
+            // Injeção de Dependências Automática
+            if (act.deps) {
+              act.deps.forEach(depId => {
+                if (!sel[depId]) {
+                  sel[depId] = true;
+                  if (!qty[depId]) qty[depId] = 1;
+                  const depAct = ACTS.find(a => a.id === depId);
+                  if (depAct && !openCats[depAct.cat]) openCats[depAct.cat] = true;
+                }
+              });
+            }
+          } else {
+            // Limpeza Reversa de Dependências
+            if (act.deps) {
+              act.deps.forEach(depId => {
+                const isStillNeeded = ACTS.some(otherAct => 
+                  sel[otherAct.id] && otherAct.id !== act.id && otherAct.deps && otherAct.deps.includes(depId)
+                );
+                if (!isStillNeeded) {
+                  sel[depId] = false;
+                }
+              });
+            }
+          }
+          renderAll();
+        };
+        cbWrap.appendChild(cb);
+
+        const info = document.createElement('div');
+        info.className = "flex-1 min-w-0";
+        
+        const lbl = document.createElement('label');
+        lbl.className = `block text-xs cursor-pointer select-none leading-snug ${checked ? 'font-medium text-slate-900' : 'text-slate-700'}`;
+        lbl.textContent = act.label;
+        lbl.onclick = (e) => { e.preventDefault(); cb.onchange(); };
+        
+        const law = document.createElement('div');
+        law.className = "text-[10px] text-slate-400 mt-0.5";
+        law.textContent = act.law;
+        
+        info.appendChild(lbl);
+        info.appendChild(law);
+
+        // Input Quantitativo
+        if(checked && needsQ){
+          const qw = document.createElement('div');
+          qw.className = "flex items-center gap-2 mt-2";
+          const ql = document.createElement('label');
+          ql.textContent = 'Qtd (Atos/Páginas/Ficheiros):';
+          ql.className = "text-[10px] uppercase font-semibold text-slate-500 tracking-wide";
+          const qi = document.createElement('input');
+          qi.type = 'number';
+          qi.min = '1';
+          qi.value = qty[act.id] || 1;
+          qi.className = "w-16 h-7 px-2 border border-slate-300 rounded text-xs font-mono text-center hide-arrows focus:ring-1 focus:ring-blue-500 outline-none";
+          qi.oninput = () => { qty[act.id] = Math.max(1, parseInt(qi.value) || 1); renderSummary(); };
+          
+          qw.appendChild(ql);
+          qw.appendChild(qi);
+          info.appendChild(qw);
+        }
+
+        // Input Valor Financeiro Manual (BRL)
+        if(checked && isManualBrl){
+          const qw = document.createElement('div');
+          qw.className = "flex items-center gap-2 mt-2";
+          const ql = document.createElement('label');
+          ql.textContent = 'Valor Final (R$):';
+          ql.className = "text-[10px] uppercase font-semibold text-slate-500 tracking-wide";
+          const qi = document.createElement('input');
+          qi.type = 'text';
+          qi.placeholder = '0,00';
+          qi.value = manualVals[act.id] > 0 ? manualVals[act.id].toLocaleString('pt-PT', {minimumFractionDigits: 2}) : '';
+          qi.className = "w-24 h-7 px-2 border border-slate-300 rounded text-xs text-right focus:ring-1 focus:ring-blue-500 outline-none";
+          
+          // Ouve a digitação e atualiza o resumo em tempo real
+          qi.oninput = (e) => {
+             manualVals[act.id] = parseNum(e.target.value);
+             renderSummary();
+          };
+          // Formata visualmente quando tira o foco
+          qi.onblur = (e) => {
+             e.target.value = manualVals[act.id] > 0 ? manualVals[act.id].toLocaleString('pt-PT', {minimumFractionDigits: 2}) : '';
+          };
+          
+          qw.appendChild(ql);
+          qw.appendChild(qi);
+          info.appendChild(qw);
+        }
+
+        row.appendChild(cbWrap);
+        row.appendChild(info);
+        body.appendChild(row);
+      });
+      wrap.appendChild(body);
+    }
+    catContainer.appendChild(wrap);
+  });
+}
+
+function renderSummary(){
+  const {upf, val, tipo, client, caseName} = getInputs();
+  const selActs = ACTS.filter(a => sel[a.id]);
+  const sum = document.getElementById('summary');
+  
+  const dClear = document.getElementById('btn-clear');
+  const mClear = document.getElementById('btn-clear-mobile');
+  const btnPdf = document.getElementById('btn-export-pdf');
+  
+  dClear.style.display = selActs.length > 0 ? 'flex' : 'none';
+  mClear.style.display = selActs.length > 0 ? 'flex' : 'none';
+  btnPdf.style.display = selActs.length > 0 ? 'inline-flex' : 'none';
+
+  if(selActs.length === 0){
+    sum.innerHTML = `
+      <div class="flex flex-col items-center justify-center p-10 text-slate-400 flex-1 bg-slate-50">
+        <svg class="w-10 h-10 mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+        <div class="text-xs font-medium">Nenhum ato selecionado</div>
+        <div class="text-[10px] mt-1 opacity-75">Selecione os itens na lista ao lado.</div>
+      </div>
+    `;
+    return;
+  }
+
+  let totalBRL = 0, hasErr = false;
+  const rows = selActs.map(act => {
+    const q = Math.max(1, parseInt(qty[act.id]) || 1);
+    const man = manualVals[act.id] || 0;
+    const calc = calcCustas(act, val, upf, tipo, q, man);
+    if(calc.ok) totalBRL += calc.brl;
+    else hasErr = true;
+    return { act, q, calc };
+  });
+
+  const dataAtual = new Date().toLocaleDateString('pt-PT');
+  const activeAlerts = [...new Set(selActs.filter(a => a.alert).map(a => a.alert))];
+
+  let html = `
+    <div class="p-5 md:p-6 bg-white border-b border-slate-200">
+      <h2 class="text-[15px] font-bold text-slate-900 tracking-wide mb-5">RESUMO DE ESTIMATIVA EXTRAJUDICIAL</h2>
+      <div class="grid grid-cols-2 gap-4 text-[13px] text-slate-700">
+        <div>
+          <span class="font-bold text-slate-400 uppercase text-[9px] block tracking-widest mb-1">CLIENTE / REQUERENTE</span> 
+          ${client || '-'}
+        </div>
+        <div>
+          <span class="font-bold text-slate-400 uppercase text-[9px] block tracking-widest mb-1">IMÓVEL / ATO</span> 
+          ${caseName || '-'}
+        </div>
+        <div>
+          <span class="font-bold text-slate-400 uppercase text-[9px] block tracking-widest mb-1">DATA DE PROCESSAMENTO</span> 
+          ${dataAtual}
+        </div>
+        <div>
+          <span class="font-bold text-slate-400 uppercase text-[9px] block tracking-widest mb-1">BASE DE CÁLCULO</span> 
+          ${val > 0 ? fmtBRL(val) : 'Não informada'}
+        </div>
+      </div>
+    </div>
+  `;
+
+  if (activeAlerts.length > 0) {
+    html += `
+      <div class="px-5 py-4 bg-blue-50/50 border-b border-blue-100 print:hidden">
+        <div class="flex items-start gap-2.5">
+          <svg class="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <div class="space-y-1.5">
+            ${activeAlerts.map(al => `<p class="text-[11px] text-blue-800 leading-tight">${al}</p>`).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  html += `<div class="flex-1 overflow-y-auto custom-scrollbar bg-white divide-y divide-slate-100 print:overflow-visible">`;
+  
+  rows.forEach(r => {
+    const cat = CATS.find(c => c.id === r.act.cat);
+    html += `
+      <div class="p-5 flex items-start justify-between gap-4 print:break-inside-avoid">
+        <div class="flex-1 min-w-0">
+          <div class="text-[13px] font-semibold text-slate-700 leading-snug truncate whitespace-normal mb-1.5">${r.act.label}</div>
+          <div class="flex flex-wrap items-center gap-2">
+             <span class="text-[9px] font-bold ${cat.text} bg-slate-50 px-1.5 py-0.5 rounded border ${cat.border}">${cat.id.toUpperCase()}</span>
+             ${(r.q > 1 && r.act.type !== 'brl_manual') ? `<span class="text-[10px] text-slate-500 font-mono bg-slate-100 px-1.5 py-0.5 rounded">Qtd: ${r.q}</span>` : ''}
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          ${r.calc.ok
+            ? `<div class="text-[15px] font-bold ${r.calc.brl === 0 ? 'text-emerald-600' : 'text-slate-900'}">${r.calc.brl === 0 ? 'ISENTO (R$ 0,00)' : fmtBRL(r.calc.brl).replace('R$', '').trim() + ' R$'}</div>
+               <div class="text-[10px] text-slate-400 font-mono mt-0.5">${r.calc.meta}</div>`
+            : `<div class="text-xs font-medium text-rose-500 bg-rose-50 px-2 py-1 rounded">⚠ Pendente Base</div>`
+          }
+        </div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+
+  html += `
+    <div class="bg-slate-900 p-6 text-white print:break-inside-avoid">
+      <div class="flex justify-between items-end">
+        <div>
+          <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Total Estimado</div>
+          <div class="text-xs text-slate-300">${rows.filter(r=>r.calc.ok).length} rubrica(s) apurada(s)</div>
+        </div>
+        <div class="text-right">
+          <div class="text-2xl font-bold tracking-tight">${fmtBRL(totalBRL).replace('R$', '').trim()} R$</div>
+        </div>
+      </div>
+      ${hasErr ? `
+        <div class="mt-4 p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg flex items-start gap-2 print:hidden">
+          <svg class="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          <div class="text-[11px] text-rose-200 leading-tight">Valor de base obrigatório para o cálculo dos impostos e/ou emolumentos tabelados.</div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+
+  sum.innerHTML = html;
+}
+
+function updateVisibility() {
+  const itcmdOn = !!sel['i1'];
+  const needsValOn = Object.keys(sel).some(id => sel[id] && ACTS.find(a => a.id === id)?.needsVal);
+  
+  document.getElementById('container-upf').classList.toggle('hidden', !itcmdOn);
+  document.getElementById('container-tipo').classList.toggle('hidden', !itcmdOn);
+  document.getElementById('container-valor').classList.toggle('hidden', !needsValOn);
+
+  const upfDisplay = document.getElementById('valor-upf-display');
+  if (itcmdOn && needsValOn) {
+    upfDisplay.classList.remove('hidden');
+    upfDisplay.classList.add('flex');
+  } else {
+    upfDisplay.classList.add('hidden');
+    upfDisplay.classList.remove('flex');
+  }
+}
+
+function renderAll() {
+  updateVisibility();
+  renderCatalog();
+  renderSummary();
+}
+
+function clearAll() {
+  sel = {};
+  qty = {};
+  manualVals = {};
+  renderAll();
+}
+
+document.getElementById('upf').addEventListener('input', renderSummary);
+document.getElementById('tipo_transmissao').addEventListener('change', renderSummary);
+document.getElementById('valor_base').addEventListener('input', () => {
+  const {upf, val} = getInputs();
+  const d = document.getElementById('valor-upf-display');
+  d.textContent = val > 0 && upf > 0 ? `Equivalente a ${(val / upf).toLocaleString('pt-PT', {maximumFractionDigits:2})} UPFs` : '';
+  renderSummary();
+});
+
+document.getElementById('client-name').addEventListener('input', renderSummary);
+document.getElementById('case-name').addEventListener('input', renderSummary);
+
+document.getElementById('btn-clear').addEventListener('click', clearAll);
+document.getElementById('btn-clear-mobile').addEventListener('click', clearAll);
+
+document.getElementById('btn-export-pdf').addEventListener('click', () => {
+  const { client } = getInputs();
+  const originalTitle = document.title;
+  
+  // Atualiza o título do documento para que o PDF seja gerado com o nome do cliente
+  document.title = client ? `Custas_Extrajudiciais_${client.replace(/[^a-zA-Z0-9\u00C0-\u00FF]/g, '_')}` : 'Resumo_Previsao_Custas_Extrajudiciais';
+  
+  // Timeout de 100ms resolve o atraso em que o Chrome captura o nome do PDF antes da troca de document.title estar concluída
+  setTimeout(() => {
+    window.print();
+    document.title = originalTitle;
+  }, 100);
+});
+
+// Init
+renderAll();
+</script>
+</body>
+</html>
