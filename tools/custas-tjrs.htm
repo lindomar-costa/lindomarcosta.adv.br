@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Custas — RS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+    .hide-arrows::-webkit-outer-spin-button, .hide-arrows::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .hide-arrows { -moz-appearance: textfield; }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+    
+    @media print {
+      body { background-color: white !important; padding: 0 !important; margin: 0 !important; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      @page { margin: 15mm; }
+    }
+  </style>
+</head>
+<body class="text-slate-800 p-4 md:p-8 max-w-6xl mx-auto print:max-w-none print:w-full print:p-0">
+
+  <!-- Painel Superior (Oculto na Impressão) -->
+  <div class="bg-white border border-slate-200 shadow-sm rounded-xl mb-6 p-5 md:p-6 print:hidden">
+    <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-lg font-semibold text-slate-900 tracking-tight">Calculadora de Custas Judiciais — TJRS</h1>
+        <p class="text-xs text-slate-500 mt-1">Lei 14.634/2014 (Taxa Única) | Lei 8.121/85 (Regimento de Custas)</p>
+      </div>
+      <button id="btn-clear" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-md transition-colors">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        Limpar Tudo
+      </button>
+    </div>
+
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-wrap gap-4 items-end">
+        <div class="w-full sm:w-auto min-w-[140px]">
+          <div class="flex justify-between items-center mb-1.5 ml-1">
+            <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider">URC do mês (R$)</label>
+            <a id="link-urc" href="#" target="_blank" class="text-[10px] font-medium text-blue-500 hover:text-blue-700 hover:underline">Consultar URC Atual</a>
+          </div>
+          <input type="text" id="urc" value="57,70" placeholder="57,70" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+        </div>
+        
+        <div class="w-full sm:w-auto min-w-[200px] flex-1 sm:flex-none">
+          <div class="flex justify-between items-center mb-1.5 ml-1">
+            <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Valor da causa (R$)</label>
+            <a href="https://www.tjrs.jus.br/novo/processos-e-servicos/custas-e-despesas/custas-processuais/" target="_blank" class="text-[10px] font-medium text-blue-500 hover:text-blue-700 hover:underline" title="Tabela de Alçada do TJRS">Consultar Valor de Alçada Atual</a>
+          </div>
+          <input type="text" id="cv" placeholder="Ex: 2.580,00" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+        </div>
+        
+        <div id="cv-urc" class="text-xs text-slate-400 font-mono pb-2 h-9 flex items-center"></div>
+      </div>
+      
+      <div class="flex flex-wrap gap-4 items-end pt-2 border-t border-slate-100">
+        <div class="w-full sm:w-auto min-w-[200px] flex-1">
+          <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Nome do Cliente</label>
+          <input type="text" id="client-name" placeholder="Ex: João da Silva" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+        </div>
+        <div class="w-full sm:w-auto min-w-[200px] flex-1">
+          <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Título do Caso / Processo</label>
+          <input type="text" id="case-name" placeholder="Ex: Ação Indenizatória (001/1.05...)" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+        </div>
+        <button id="btn-clear-mobile" class="md:hidden w-full mt-2 flex justify-center items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-lg transition-colors">
+          Limpar Seleção
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start print:block print:w-full">
+    
+    <!-- Catálogo (Oculto na Impressão) -->
+    <div class="lg:col-span-7 space-y-3 print:hidden">
+      <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider ml-1 mb-1">Selecione os atos processuais</div>
+      <div id="catalog" class="space-y-3"></div>
+    </div>
+
+    <!-- Resumo (Expande na Impressão) -->
+    <div class="lg:col-span-5 lg:sticky lg:top-8 print:w-full print:static">
+      <div class="flex items-center justify-between mb-1 print:hidden">
+        <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider ml-1">Resumo da Conta</div>
+        <button id="btn-export-pdf" class="hidden items-center gap-1.5 text-[11px] font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors px-3 py-1.5 rounded-md shadow-sm">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+          Exportar PDF
+        </button>
+      </div>
+      
+      <!-- O contêiner perde as sombras e as bordas na impressão para ficar mais limpo -->
+      <div id="summary" class="bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden flex flex-col min-h-[200px] print:shadow-none print:border-none print:block"></div>
+      
+      <div class="text-[11px] text-slate-500 mt-4 leading-relaxed px-1 print:mt-6 print:text-slate-400 print:text-[9px]">
+        * Estimativa. Não inclui honorários periciais e demais encargos avulsos.
+      </div>
+    </div>
+  </div>
+
+<script>
+const CATS = [
+  {id:"tu", label:"Taxa Única — Lei 14.634/2014", bg:"bg-blue-50", border:"border-blue-100", hdr:"bg-blue-600", text:"text-blue-600"},
+  {id:"ti", label:"Tabela I — Escrivães (Lei 8.121/85)", bg:"bg-emerald-50", border:"border-emerald-100", hdr:"bg-emerald-600", text:"text-emerald-600"},
+  {id:"tc", label:"Tabela C — 2º Grau (Lei 8.121/85)", bg:"bg-violet-50", border:"border-violet-100", hdr:"bg-violet-600", text:"text-violet-600"},
+  {id:"tj", label:"Tabela J — Distribuidores (Lei 8.121/85)", bg:"bg-amber-50", border:"border-amber-100", hdr:"bg-amber-600", text:"text-amber-600"},
+  {id:"tn", label:"Tabela N — Oficiais de Justiça", bg:"bg-rose-50", border:"border-rose-100", hdr:"bg-rose-600", text:"text-rose-600"}
+];
+
+const ACTS = [
+  {id:"tu1", cat:"tu", label:"Ação em geral (conhecimento / execução / cautelar)", law:"Art. 10, I — Lei 14.634/2014", type:"pct", rate:.025, minU:5, maxU:1000, needsCV:true},
+  {id:"tu2", cat:"tu", label:"Embargos / Cumprimento / Impugnação / Incid. Descons. / Prod. Prova", law:"Art. 10, II — Lei 14.634/2014", type:"pct", rate:.01, minU:5, maxU:300, needsCV:true},
+  {id:"tu3", cat:"tu", label:"Valor inestimável / Inventário negativo / Criminal", law:"Art. 10, §1º — Lei 14.634/2014", type:"fix", val:6.25},
+  {id:"tu4", cat:"tu", label:"Carta precatória / de ordem / rogatória / arbitral", law:"Art. 10, §4º — Lei 14.634/2014", type:"fix", val:0.75},
+  {id:"tu5", cat:"tu", label:"Apelação / Embargos Infringentes / Recurso Criminal", law:"Art. 13 — Lei 14.634/2014", type:"fix", val:8},
+  {id:"tu6", cat:"tu", label:"Agravo de Instrumento", law:"Art. 13 — Lei 14.634/2014", type:"fix", val:4},
+  
+  {id:"ti1", cat:"ti", label:"Processo geral — Letra A (conhecimento / exec. extrajudicial)", law:"Tab. I nº 1-A — Lei 8.121/85", type:"tabI", mult:1, needsCV:true},
+  {id:"ti2", cat:"ti", label:"Processo — Letra B: MS, Cautelar, JV, Exec. Judicial (−30%)", law:"Tab. I nº 1-B", type:"tabI", mult:.70, needsCV:true},
+  {id:"ti3", cat:"ti", label:"Inventário / Arrolamento / Sobrepartilha (0,6% ad val.)", law:"Tab. I nº 8", type:"av", rate:.006, minU:3, maxU:150, needsCV:true},
+  {id:"ti4", cat:"ti", label:"Inventário negativo", law:"Tab. I nº 9", type:"fix", val:.3},
+  {id:"ti5", cat:"ti", label:"Separação / Divórcio Consensual", law:"Tab. I nº 10", type:"fix", val:2.16},
+  {id:"ti6", cat:"ti", label:"Processo Criminal — até a sentença", law:"Tab. I nº 14, I-a", type:"fix", val:1.5},
+  {id:"ti7", cat:"ti", label:"Processo Criminal — julgamento em plenário (júri)", law:"Tab. I nº 14, I-b", type:"fix", val:3},
+  {id:"ti8", cat:"ti", label:"Execução de sentença / Reabilitação (criminal)", law:"Tab. I nº 14, III", type:"fix", val:1},
+  {id:"ti9", cat:"ti", label:"Livramento condicional / Revogação medida segurança", law:"Tab. I nº 14, II", type:"fix", val:.5},
+  {id:"ti10", cat:"ti", label:"Alvará em procedimento judicial", law:"Tab. I nº 2-a", type:"fix", val:.10},
+  {id:"ti11", cat:"ti", label:"Alvará em procedimento autônomo", law:"Tab. I nº 2-c", type:"fix", val:.30},
+  {id:"ti12", cat:"ti", label:"Testamento — apresentação e registro", law:"Tab. I nº 20", type:"fix", val:1.56},
+  {id:"ti13", cat:"ti", label:"Formal de partilha (por página)", law:"Tab. I nº 21", type:"fixq", val:.05},
+  {id:"ti14", cat:"ti", label:"Reconvenção (50% da Tab.I nº1)", law:"Tab. I nº 18", type:"tabI", mult:.5, needsCV:true},
+  {id:"ti15", cat:"ti", label:"Diligência — dentro dos limites urbanos", law:"Tab. I nº 23-a", type:"fix", val:.30},
+  {id:"ti16", cat:"ti", label:"Diligência — fora dos limites urbanos", law:"Tab. I nº 23-b", type:"fix", val:.50},
+  {id:"ti17", cat:"ti", label:"Certidão expedida (por página)", law:"Tab. I nº 25-a", type:"fixq", val:.15},
+  {id:"ti18", cat:"ti", label:"Certidão reprográfica / autenticação (por página)", law:"Tab. I nº 25-b", type:"fixq", val:.04},
+  {id:"ti19", cat:"ti", label:"Requisição de autos ao arquivo público", law:"Tab. I nº 3", type:"fix", val:.56},
+
+  {id:"tc1", cat:"tc", label:"Apelação — por todos os termos", law:"Tab. C nº 1 — Lei 8.121/85", type:"tabC", mult:1, needsCV:true},
+  {id:"tc2", cat:"tc", label:"Agravo de Instrumento (48% da apelação)", law:"Tab. C nº 2", type:"tabC", mult:.48, needsCV:true},
+  {id:"tc3", cat:"tc", label:"Embargos Infringentes (24% da apelação)", law:"Tab. C nº 3", type:"tabC", mult:.24, needsCV:true},
+  {id:"tc4", cat:"tc", label:"Recurso Criminal / Cessação de Periculosidade", law:"Tab. C nº 7", type:"fix", val:.48},
+
+  {id:"tj1", cat:"tj", label:"Distribuição (Distribuidor / Contador / Partidor)", law:"Tab. J nº 1 — Lei 8.121/85", type:"tabJ", mult:1, needsCV:true},
+
+  {id:"tn1", cat:"tn", label:"Citação — diligências, certidão e contrafé", law:"Tab. N nº 1 — Lei 8.121/85", type:"tabN", mult:1, needsCV:true},
+  {id:"tn2", cat:"tn", label:"Penhora / Arresto / Sequestro (dobro)", law:"Tab. N nº 2", type:"tabN", mult:2, needsCV:true},
+  {id:"tn3", cat:"tn", label:"Notificação / Intimação (por pessoa — 7% URC)", law:"Tab. N nº 4", type:"fixq", val:.07}
+];
+
+function tabI(c){
+  if(c<=12)return 0.72; if(c<=24)return 1.44; if(c<=40)return 2.16; if(c<=80)return 4.32;
+  if(c<=160)return 5.76; if(c<=240)return 7.20; if(c<=320)return 8.64; if(c<=400)return 10.08;
+  if(c<=600)return 11.52; if(c<=1200)return 12.96; if(c<=2400)return Math.min(c*.0108,150);
+  if(c<=4000)return Math.min(c*.0092,150); if(c<=6000)return Math.min(c*.0085,150);
+  if(c<=10000)return Math.min(c*.0083,150); if(c<=15000)return Math.min(c*.0081,150);
+  return Math.min(c*.0079,150);
+}
+
+function tabC(c){
+  if(c<=12)return .40; if(c<=24)return .60; if(c<=80)return 1; if(c<=400)return 1.5;
+  if(c<=800)return 2; return 2+Math.min(c*.0002,100);
+}
+
+function tabN(c){
+  if(c<=12)return .30; if(c<=24)return .40; if(c<=40)return .50; if(c<=80)return .60;
+  if(c<=160)return .72; if(c<=240)return .75; if(c<=320)return .78; if(c<=400)return .81;
+  if(c<=600)return .84; if(c<=1200)return 1.2; if(c<=2400)return 1.5; if(c<=4000)return 1.8;
+  if(c<=6000)return 2.1; if(c<=10000)return 2.4; if(c<=15000)return 2.7; return 3;
+}
+
+function tabJ(c){
+  if(c<=12)return .24; if(c<=24)return .40; if(c<=40)return .44; if(c<=80)return .48;
+  if(c<=160)return .53; if(c<=240)return .58; if(c<=320)return .63; if(c<=400)return .70;
+  if(c<=600)return .77; if(c<=1200)return .93; if(c<=2400)return 1; if(c<=4000)return 1.2;
+  if(c<=6000)return 1.5; if(c<=10000)return 2; if(c<=15000)return 2.5; return 3;
+}
+
+function parseNum(s){ return parseFloat(String(s||0).replace(/\./g,'').replace(',','.')) || 0; }
+function fmtBRL(v){ return v.toLocaleString('pt-PT',{style:'currency',currency:'BRL'}); }
+function fmtURC(v){ return v.toFixed(4).replace('.',',')+" URC"; }
+
+function calcURC(act, cvBRL, urc, qty){
+  const cv = urc > 0 ? cvBRL / urc : 0, q = Math.max(1, qty || 1);
+  if(act.type === 'fix') return {ok: true, urc: act.val};
+  if(act.type === 'fixq') return {ok: true, urc: act.val * q};
+  if(act.type === 'brlq') {
+    if(!urc) return {ok: false, msg: 'Informe a URC base'};
+    return {ok: true, urc: (act.val * q) / urc};
+  }
+  if(act.type === 'pct'){
+    if(!cvBRL || !urc) return {ok: false, msg: 'Informe o valor da causa'};
+    return {ok: true, urc: Math.min(Math.max(cvBRL * act.rate / urc, act.minU), act.maxU)};
+  }
+  if(act.type === 'av'){
+    if(!cvBRL || !urc) return {ok: false, msg: 'Informe o valor (monte-mor)'};
+    return {ok: true, urc: Math.min(Math.max(cvBRL * act.rate / urc, act.minU), act.maxU)};
+  }
+  if(act.type === 'tabI'){ if(!cvBRL||!urc) return{ok:false, msg:'Informe o valor da causa'}; return{ok:true, urc:tabI(cv)*act.mult}; }
+  if(act.type === 'tabC'){ if(!cvBRL||!urc) return{ok:false, msg:'Informe o valor da causa'}; return{ok:true, urc:tabC(cv)*act.mult}; }
+  if(act.type === 'tabN'){ if(!cvBRL||!urc) return{ok:false, msg:'Informe o valor da causa'}; return{ok:true, urc:tabN(cv)*act.mult}; }
+  if(act.type === 'tabJ'){ if(!cvBRL||!urc) return{ok:false, msg:'Informe o valor da causa'}; return{ok:true, urc:tabJ(cv)*act.mult}; }
+  return {ok: false, msg: '?'};
+}
+
+let sel = {}, qty = {}, openCats = {tu: true};
+
+function getInputs(){
+  return {
+    urc: parseNum(document.getElementById('urc').value),
+    cv: parseNum(document.getElementById('cv').value),
+    client: document.getElementById('client-name').value.trim(),
+    caseName: document.getElementById('case-name').value.trim()
+  };
+}
+
+// Configuração do URL dinâmico da URC
+function setupUrcLink() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const monthsStr = ['Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  const monthName = monthsStr[d.getMonth()];
+  
+  const linkEl = document.getElementById('link-urc');
+  if(linkEl) {
+    linkEl.href = `https://www.tjrs.jus.br/static/${year}/${month}/URC_-${monthName}_${year}.pdf`;
+  }
+}
+
+function renderCatalog(){
+  const catContainer = document.getElementById('catalog');
+  catContainer.innerHTML = '';
+
+  CATS.forEach(c => {
+    const acts = ACTS.filter(a => a.cat === c.id);
+    if(acts.length === 0) return;
+    
+    const count = acts.filter(a => sel[a.id]).length;
+    const isOpen = !!openCats[c.id];
+
+    const wrap = document.createElement('div');
+    wrap.className = `border rounded-xl overflow-hidden transition-all duration-200 ${c.border}`;
+    
+    const hdr = document.createElement('button');
+    hdr.className = `w-full flex items-center justify-between px-4 py-3 cursor-pointer text-left transition-colors ${c.hdr} text-white`;
+    hdr.innerHTML = `
+      <span class="text-xs font-medium tracking-wide">${c.label}</span>
+      <div class="flex items-center gap-2">
+        ${count > 0 ? `<span class="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full">${count}</span>` : ''}
+        <svg class="w-4 h-4 transform transition-transform ${isOpen ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+      </div>
+    `;
+    hdr.onclick = () => { openCats[c.id] = !openCats[c.id]; renderAll(); };
+    wrap.appendChild(hdr);
+
+    if(isOpen){
+      const body = document.createElement('div');
+      body.className = `${c.bg} divide-y divide-black/5`;
+      
+      acts.forEach(act => {
+        const checked = !!sel[act.id];
+        const needsQ = act.type === 'fixq' || act.type === 'brlq';
+        
+        const row = document.createElement('div');
+        row.className = `flex items-start gap-3 p-3 transition-colors ${checked ? 'bg-black/5' : 'hover:bg-black/[0.02]'}`;
+        
+        const cbWrap = document.createElement('div');
+        cbWrap.className = "flex-shrink-0 pt-0.5";
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = checked;
+        cb.className = "w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer transition-all";
+        cb.onchange = () => {
+          sel[act.id] = !sel[act.id];
+          if(!qty[act.id]) qty[act.id] = 1;
+          renderAll();
+        };
+        cbWrap.appendChild(cb);
+
+        const info = document.createElement('div');
+        info.className = "flex-1 min-w-0";
+        
+        const lbl = document.createElement('label');
+        lbl.className = `block text-xs cursor-pointer select-none leading-snug ${checked ? 'font-medium text-slate-900' : 'text-slate-700'}`;
+        lbl.textContent = act.label;
+        lbl.onclick = (e) => { e.preventDefault(); cb.onchange(); };
+        
+        const law = document.createElement('div');
+        law.className = "text-[10px] text-slate-400 mt-0.5";
+        law.textContent = act.law;
+        
+        info.appendChild(lbl);
+        info.appendChild(law);
+
+        if(checked && needsQ){
+          const qw = document.createElement('div');
+          qw.className = "flex items-center gap-2 mt-2";
+          const ql = document.createElement('label');
+          ql.textContent = 'Quantidade:';
+          ql.className = "text-[10px] uppercase font-semibold text-slate-500 tracking-wide";
+          const qi = document.createElement('input');
+          qi.type = 'number';
+          qi.min = '1';
+          qi.value = qty[act.id] || 1;
+          qi.className = "w-16 h-7 px-2 border border-slate-300 rounded text-xs font-mono text-center hide-arrows focus:ring-1 focus:ring-blue-500 outline-none";
+          qi.oninput = () => { qty[act.id] = Math.max(1, parseInt(qi.value) || 1); renderSummary(); };
+          
+          qw.appendChild(ql);
+          qw.appendChild(qi);
+          info.appendChild(qw);
+        }
+
+        row.appendChild(cbWrap);
+        row.appendChild(info);
+        body.appendChild(row);
+      });
+      wrap.appendChild(body);
+    }
+    catContainer.appendChild(wrap);
+  });
+}
+
+function renderSummary(){
+  const {urc, cv, client, caseName} = getInputs();
+  const selActs = ACTS.filter(a => sel[a.id]);
+  const sum = document.getElementById('summary');
+  
+  const dClear = document.getElementById('btn-clear');
+  const mClear = document.getElementById('btn-clear-mobile');
+  const btnPdf = document.getElementById('btn-export-pdf');
+  
+  dClear.style.display = selActs.length > 0 ? 'flex' : 'none';
+  mClear.style.display = selActs.length > 0 ? 'flex' : 'none';
+  btnPdf.style.display = selActs.length > 0 ? 'inline-flex' : 'none';
+
+  if(selActs.length === 0){
+    sum.innerHTML = `
+      <div class="flex flex-col items-center justify-center p-10 text-slate-400 flex-1 bg-slate-50">
+        <svg class="w-10 h-10 mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+        <div class="text-xs font-medium">Nenhum ato selecionado</div>
+        <div class="text-[10px] mt-1 opacity-75">Selecione os itens na lista ao lado.</div>
+      </div>
+    `;
+    return;
+  }
+
+  let totalURC = 0, hasErr = false;
+  const rows = selActs.map(act => {
+    const q = Math.max(1, parseInt(qty[act.id]) || 1);
+    const calc = calcURC(act, cv, urc, q);
+    if(calc.ok) totalURC += calc.urc;
+    else hasErr = true;
+    return { act, q, calc, brl: calc.ok ? calc.urc * urc : null };
+  });
+
+  const dataAtual = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute:'2-digit' });
+
+  // Reestruturação exata baseada na imagem para espelhar a fidelidade no PDF
+  let html = `
+    <div class="p-5 md:p-6 bg-white border-b border-slate-200">
+      <h2 class="text-[15px] font-bold text-slate-900 tracking-wide mb-5">RESUMO DE PREVISÃO DE CUSTAS - TJRS</h2>
+      <div class="grid grid-cols-2 gap-4 text-[13px] text-slate-700">
+        <div>
+          <span class="font-bold text-slate-400 uppercase text-[9px] block tracking-widest mb-1">CLIENTE</span> 
+          ${client || '-'}
+        </div>
+        <div>
+          <span class="font-bold text-slate-400 uppercase text-[9px] block tracking-widest mb-1">CASO / PROCESSO</span> 
+          ${caseName || '-'}
+        </div>
+        <div class="col-span-2">
+          <span class="font-bold text-slate-400 uppercase text-[9px] block tracking-widest mb-1">DATA DE ELABORAÇÃO</span> 
+          ${dataAtual}
+        </div>
+      </div>
+    </div>
+    <div class="flex-1 overflow-y-auto custom-scrollbar bg-white divide-y divide-slate-100 print:overflow-visible">
+  `;
+  
+  rows.forEach(r => {
+    const cat = CATS.find(c => c.id === r.act.cat);
+    html += `
+      <div class="p-5 flex items-start justify-between gap-4 print:break-inside-avoid">
+        <div class="flex-1 min-w-0">
+          <div class="text-[13px] font-semibold text-slate-700 leading-snug truncate whitespace-normal mb-1.5">${r.act.label}</div>
+          <div class="flex flex-wrap items-center gap-2">
+             <span class="text-[9px] font-bold ${cat.text} bg-slate-50 px-1.5 py-0.5 rounded border ${cat.border}">${cat.id.toUpperCase()}</span>
+             ${r.q > 1 ? `<span class="text-[10px] text-slate-500 font-mono bg-slate-100 px-1.5 py-0.5 rounded">Qtd: ${r.q}</span>` : ''}
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          ${r.calc.ok
+            ? `<div class="text-[15px] font-bold text-slate-900">${fmtBRL(r.brl).replace('R$', '').trim()} R$</div>
+               <div class="text-[10px] text-slate-400 font-mono mt-0.5">${r.calc.urc.toFixed(4).replace('.',',')} URC</div>`
+            : `<div class="text-xs font-medium text-rose-500 bg-rose-50 px-2 py-1 rounded">⚠ Pendente</div>`
+          }
+        </div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+
+  html += `
+    <div class="bg-slate-900 p-6 text-white print:break-inside-avoid">
+      <div class="flex justify-between items-end">
+        <div>
+          <div class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Total Estimado</div>
+          <div class="text-xs text-slate-300">${rows.filter(r=>r.calc.ok).length} ato(s) apurado(s)</div>
+        </div>
+        <div class="text-right">
+          <div class="text-2xl font-bold tracking-tight">${fmtBRL(totalURC * urc).replace('R$', '').trim()} R$</div>
+          <div class="text-[11px] text-slate-400 font-mono mt-1">${totalURC.toFixed(4).replace('.',',')} URC</div>
+        </div>
+      </div>
+      ${hasErr ? `
+        <div class="mt-4 p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg flex items-start gap-2 print:hidden">
+          <svg class="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          <div class="text-[11px] text-rose-200 leading-tight">Valor da causa obrigatório para o cálculo das custas selecionadas.</div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+
+  sum.innerHTML = html;
+}
+
+function renderAll() {
+  renderCatalog();
+  renderSummary();
+}
+
+function clearAll() {
+  sel = {};
+  qty = {};
+  renderAll();
+}
+
+document.addEventListener('DOMContentLoaded', setupUrcLink);
+
+document.getElementById('urc').addEventListener('input', renderSummary);
+document.getElementById('cv').addEventListener('input', () => {
+  const {urc, cv} = getInputs();
+  const d = document.getElementById('cv-urc');
+  d.textContent = cv > 0 && urc > 0 ? `≈ ${(cv / urc).toFixed(2).replace('.',',')} URC` : '';
+  renderSummary();
+});
+document.getElementById('client-name').addEventListener('input', renderSummary);
+document.getElementById('case-name').addEventListener('input', renderSummary);
+
+document.getElementById('btn-clear').addEventListener('click', clearAll);
+document.getElementById('btn-clear-mobile').addEventListener('click', clearAll);
+
+document.getElementById('btn-export-pdf').addEventListener('click', () => {
+  const { client } = getInputs();
+  const originalTitle = document.title;
+  
+  document.title = client ? `Custas_${client.replace(/[^a-zA-Z0-9\u00C0-\u00FF]/g, '_')}` : 'Resumo_Previsao_Custas_TJRS';
+  window.print();
+  document.title = originalTitle;
+});
+
+// Init
+setupUrcLink();
+renderAll();
+</script>
+</body>
+</html>
