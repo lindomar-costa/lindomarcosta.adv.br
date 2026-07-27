@@ -27,13 +27,11 @@
 
     <script>
         (function () {
-            // Se o usuário já definiu manualmente a preferência, respeita a escolha dele
             if (sessionStorage.getItem('lang_pref') === 'pt' || sessionStorage.getItem('lang_pref') === 'en') return;
-
             var lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
             if (lang.startsWith('pt')) {
                 sessionStorage.setItem('lang_pref', 'pt');
-                window.location.replace('../link/index.html');
+                window.location.replace('/link');
             }
         })();
     </script>
@@ -108,7 +106,7 @@
         <div class="w-full max-w-md mx-auto">
 
             <div class="flex justify-end mb-6">
-                <a href="../link/index.html" onclick="sessionStorage.setItem('lang_pref', 'pt')" class="text-xs font-medium text-brand-gray hover:text-brand-accent transition tracking-widest flex items-center gap-1">
+                <a href="/link" onclick="sessionStorage.setItem('lang_pref', 'pt')" class="text-xs font-medium text-brand-gray hover:text-brand-accent transition tracking-widest flex items-center gap-1">
                     <i class="fas fa-globe text-xs" aria-hidden="true"></i> PT
                 </a>
             </div>
