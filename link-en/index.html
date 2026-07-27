@@ -31,7 +31,7 @@
             var lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
             if (lang.startsWith('pt')) {
                 sessionStorage.setItem('lang_pref', 'pt');
-                window.location.replace('/link');
+                window.location.replace('../link/');
             }
         })();
     </script>
@@ -105,12 +105,14 @@
     <main class="min-h-screen flex flex-col items-center px-6 pt-16 pb-12">
         <div class="w-full max-w-md mx-auto">
 
+            <!-- Idioma -->
             <div class="flex justify-end mb-6">
-                <a href="/link" onclick="sessionStorage.setItem('lang_pref', 'pt')" class="text-xs font-medium text-brand-gray hover:text-brand-accent transition tracking-widest flex items-center gap-1">
+                <a href="../link/" onclick="sessionStorage.setItem('lang_pref', 'pt')" class="text-xs font-medium text-brand-gray hover:text-brand-accent transition tracking-widest flex items-center gap-1">
                     <i class="fas fa-globe text-xs" aria-hidden="true"></i> PT
                 </a>
             </div>
 
+            <!-- Perfil -->
             <div class="flex flex-col items-center text-center mb-10">
                 <img src="img/logo-lindomar-costa.jpg" alt="Lindomar Costa" class="w-20 h-20 rounded-full object-cover avatar-ring mb-5" />
                 <h1 class="font-display font-bold text-2xl text-brand-dark mb-1">Lindomar Costa</h1>
@@ -120,6 +122,7 @@
                 </p>
             </div>
 
+            <!-- Links -->
             <nav class="flex flex-col gap-4" aria-label="Main links">
 
                 <a href="https://wa.me/5551998849390?text=Hello%2C%20Dr.%20Lindomar.%20I%20came%20from%20the%20links%20page%20and%20I%20need%20legal%20counsel%20for%20my%20digital%20business."
@@ -178,6 +181,7 @@
 
             </nav>
 
+            <!-- Rodapé -->
             <footer class="mt-12 text-center">
                 <p class="text-xs text-brand-gray">&copy; <span id="current-year">2026</span> Lindomar Costa - OAB/RS</p>
                 <div class="text-xs text-brand-gray space-x-3 mt-2">
