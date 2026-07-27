@@ -31,7 +31,7 @@
             var lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
             if (!lang.startsWith('pt')) {
                 sessionStorage.setItem('lang_pref', 'en');
-                window.location.replace('/link-en');
+                window.location.replace('../link-en/');
             }
         })();
     </script>
@@ -106,7 +106,7 @@
         <div class="w-full max-w-md mx-auto">
 
             <div class="flex justify-end mb-6">
-                <a href="/link-en" onclick="sessionStorage.setItem('lang_pref', 'en')" class="text-xs font-medium text-brand-gray hover:text-brand-accent transition tracking-widest flex items-center gap-1">
+                <a href="../link-en/" onclick="sessionStorage.setItem('lang_pref', 'en')" class="text-xs font-medium text-brand-gray hover:text-brand-accent transition tracking-widest flex items-center gap-1">
                     <i class="fas fa-globe text-xs" aria-hidden="true"></i> EN
                 </a>
             </div>
